@@ -18,6 +18,7 @@ board.addEventListener("mousedown", function(e){
         width: ctx.lineWidth
     }
     undoArr.push(mdp);
+    socket.emit("md", mdp);
 })
 board.addEventListener("mousemove", function(e){
     if(isPenDown){
@@ -36,6 +37,7 @@ board.addEventListener("mousemove", function(e){
             width: ctx.lineWidth
         }
         undoArr.push(mmp);
+        socket.emit("mm", mmp);
     }
 })
 window.addEventListener("mouseup", function(){
@@ -54,31 +56,26 @@ function undoLast(){
             console.log(undoArr[i]);
             let id = undoArr[i].id;
             if(id == "md"){
-                tempArr.push(undoArr.pop());
+                tempArr.unshift(undoArr.pop());
                 break;
             }else{
-                tempArr.push(undoArr.pop());
+                tempArr.unshift(undoArr.pop());
             }
         }
+        redoArr.push(tempArr);
         ctx.clearRect(0, 0, board.width, board.height);
         redraw();
     }
 }
 function redoLast(){
-    if(redoArr.length >= 2){
-        let mdc = 0;
-        console.log(redoArr);
-        for(let i=redoArr.length-1;i>=0;i--){
-            console.log(redoArr[i]);
-            let { id } = redoArr[i];
-            if(id == "md"){
-                undoArr.push(redoArr.pop());
-                break;
-            }else{
-                undoArr.push(redoArr.pop());
-            }
+    if(redoArr.length > 0){
+        let undoPath = redoArr.pop();
+        for (let i = 0; i < undoPath.length; i++) {
+            undoArr.push(undoPath[i]);
         }
+        //  clear canvas=> 
         ctx.clearRect(0, 0, board.width, board.height);
+        // redraw
         redraw();
     }
 }
